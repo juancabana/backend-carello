@@ -1,14 +1,21 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
-import { seedProducts } from './products.seed.js';
-import { seedStaff } from './staff.seed.js';
+import { seedProducts } from './products.seed';
+import { seedStaff } from './staff.seed';
 
 dotenv.config();
 
+function buildDbUrl(): string {
+  const raw = process.env['DATABASE_SEED_URL'] ?? process.env['DATABASE_URL'] ?? '';
+  const url = new URL(raw);
+  url.searchParams.set('sslmode', 'verify-full');
+  return url.toString();
+}
+
 const dataSource = new DataSource({
   type: 'postgres',
-  url: process.env['DATABASE_SEED_URL'] ?? process.env['DATABASE_URL'],
+  url: buildDbUrl(),
   ssl: { rejectUnauthorized: false },
   synchronize: true,
   entities: [__dirname + '/../../src/**/*.orm-entity{.ts,.js}'],
